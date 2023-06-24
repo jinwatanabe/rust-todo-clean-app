@@ -1,8 +1,9 @@
-use diesel::Queryable;
+use diesel::{Queryable, QueryDsl};
 use serde::Deserialize;
 use utils::establish_connection;
-use crate::utils;
+use crate::{utils};
 use diesel::RunQueryDsl;
+use diesel::prelude::*;
 #[mry::mry]
 pub struct TodoDriver {}
 
@@ -15,8 +16,11 @@ impl TodoDriver {
 		Ok(TodosJson { todos: results })
 	}
 
-	pub async fn get_by_id(&self, id: i32) -> anyhow::Result<Todo> {
-		todo!()
+	pub async fn get_by_id(&self, id_: i32) -> anyhow::Result<Todo> {
+		use crate::schema::todos::dsl::*;
+		let connection = establish_connection();
+		let result = todos.filter(id.eq(id_)).first::<Todo>(&connection)?;
+		Ok(result)
 	}
 }
 
