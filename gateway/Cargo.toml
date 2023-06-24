@@ -1,12 +1,15 @@
 [package]
-name = "usecase"
+name = "gateway"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+mry = "0.2.6"
 async-trait = "0.1.53"
 anyhow = "1.0.57"
 tokio = { version = "1.18.2", features = ["full"] }
-mry = "0.2.6"
 
+# Internal
 domain = { path = "../domain" }
+usecase = { path = "../usecase" }
+driver = { path = "../driver" }

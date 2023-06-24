@@ -10,7 +10,7 @@ pub struct Todo {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct TodoId(pub u32);
+pub struct TodoId(pub u64);
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct TodoTitle(pub String);

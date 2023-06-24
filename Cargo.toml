@@ -8,6 +8,8 @@ tracing = "0.1.27"
 rest = { path = "./rest" }
 domain = { path = "./domain" }
 usecase = { path = "./usecase" }
+gateway = { path = "./gateway" }
+driver = { path = "./driver" }
 
 [workspace]
 members = [
@@ -15,4 +17,6 @@ members = [
   "rest",
   "domain",
   "usecase",
+  "gateway",
+  "driver",
 ]
