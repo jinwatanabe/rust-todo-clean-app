@@ -4,7 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+mry = "0.2.6"
 tracing = "0.1.27"
+tower-http = { version = "0.4.0", features = ["trace"] }
+
 rest = { path = "./rest" }
 domain = { path = "./domain" }
 usecase = { path = "./usecase" }

@@ -1,35 +1,40 @@
+use axum::Extension;
 use axum::routing::get;
 use axum::{response::IntoResponse, Json, Router};
 use serde::Serialize;
+use gateway::todo::TodoGateway;
+use std::{sync::Arc};
 
-pub fn routes() -> Router {
-    Router::new().route("/v1/todos", get(get_all))
+pub struct Container {
+    pub todo_gateway: TodoGateway,
 }
 
-async fn get_all() -> impl IntoResponse {
-    let todos = TodosJson {
-        todos: vec![
-            TodoJson {
-                id: 1,
-                title: "Learn Axum".to_string(),
-                completed: false,
-            },
-            TodoJson {
-                id: 2,
-                title: "Learn Tokio".to_string(),
-                completed: false,
-            },
-        ],
-    };
+pub fn routes() -> Router {
+    Router::new()
+        .route("/v1/todos", get(get_all))
+}
 
-    Json(todos)
+async fn get_all(
+    Extension(container): Extension<Arc<Container>>,
+) -> impl IntoResponse {
+    let results = usecase::todo::get_all(&container.todo_gateway).await;
+    let todos_json = results
+        .unwrap()
+        .into_iter()
+        .map(|t| TodoJson {
+            id: t.id.0,
+            title: t.title.0,
+            done: t.done.0,
+        })
+        .collect::<Vec<TodoJson>>();
+    Json(todos_json)
 }
 
 #[derive(Serialize)]
 pub struct TodoJson {
-    pub id: u32,
+    pub id: i32,
     pub title: String,
-    pub completed: bool,
+    pub done: bool,
 }
 
 #[derive(Serialize)]

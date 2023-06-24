@@ -17,12 +17,18 @@ impl TodoPort for TodoGateway {
 			.map(|t| Todo {
 				id: TodoId(t.id),
 				title: TodoTitle(t.title),
-				done: TodoDone(t.completed),
+				done: TodoDone(t.done),
 			})
 			.collect::<Vec<Todo>>();
 
 		Ok(Todos(results))
 	}
+}
+
+impl TodoGateway {
+    pub fn new(todo_driver: TodoDriver) -> Self {
+        TodoGateway { driver: todo_driver }
+    }
 }
 
 #[cfg(test)]
