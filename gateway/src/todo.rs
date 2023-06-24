@@ -23,6 +23,17 @@ impl TodoPort for TodoGateway {
 
 		Ok(Todos(results))
 	}
+
+	async fn get_by_id(&self, id: TodoId) -> anyhow::Result<Todo> {
+		let json = self.driver.get_by_id(id.0).await?;
+		let result = Todo {
+			id: TodoId(json.id),
+			title: TodoTitle(json.title),
+			done: TodoDone(json.done),
+		};
+
+		Ok(result)
+	}
 }
 
 impl TodoGateway {
@@ -45,6 +56,26 @@ use super::*;
 		let gateway = TodoGateway { driver };
 		let actual = gateway.get_all().await;
 		let expected = Todos(vec![]);
+
+		assert_eq!(actual.unwrap(), expected)
+	}
+
+	#[tokio::test]
+	async fn test_get_by_id() {
+		let mut driver = mry::new!(TodoDriver {});
+		driver.mock_get_by_id(1).returns_with(|_| Ok(driver::todo::Todo {
+			id: 1,
+			title: "title".to_string(),
+			done: false,
+		}));
+		
+		let gateway = TodoGateway { driver };
+		let actual = gateway.get_by_id(TodoId(1)).await;
+		let expected = Todo {
+			id: TodoId(1),
+			title: TodoTitle("title".to_string()),
+			done: TodoDone(false),
+		};
 
 		assert_eq!(actual.unwrap(), expected)
 	}

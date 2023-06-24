@@ -14,6 +14,10 @@ impl TodoDriver {
 		let results = todos.load::<Todo>(&connection).expect("Error loading todos");
 		Ok(TodosJson { todos: results })
 	}
+
+	pub async fn get_by_id(&self, id: i32) -> anyhow::Result<Todo> {
+		todo!()
+	}
 }
 
 #[derive(Deserialize, Debug)]
