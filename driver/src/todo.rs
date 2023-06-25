@@ -1,9 +1,11 @@
 use diesel::{Queryable, QueryDsl};
+use domain::response::Response;
 use serde::Deserialize;
 use utils::establish_connection;
 use crate::{utils};
 use diesel::RunQueryDsl;
 use diesel::prelude::*;
+
 #[mry::mry]
 pub struct TodoDriver {}
 
@@ -21,6 +23,10 @@ impl TodoDriver {
 		let connection = establish_connection();
 		let result = todos.filter(id.eq(id_)).first::<Todo>(&connection)?;
 		Ok(result)
+	}
+
+pub async fn create(&self, title: String) -> anyhow::Result<Response> {
+		todo!()
 	}
 }
 

@@ -1,6 +1,6 @@
 
 use driver::todo::TodoDriver;
-use domain::todo::{Todo, TodoId, TodoTitle, TodoDone, Todos};
+use domain::{todo::{Todo, TodoId, TodoTitle, TodoDone, Todos}, response::Response};
 use usecase::port::todo::TodoPort;
 
 pub struct TodoGateway {
@@ -34,6 +34,15 @@ impl TodoPort for TodoGateway {
 
 		Ok(result)
 	}
+
+	async fn create(&self, title: TodoTitle) -> anyhow::Result<Response> {
+		let json = self.driver.create(title.0).await?;
+		let result = Response {
+			message: json.message,
+		};
+
+		Ok(result)
+	}
 }
 
 impl TodoGateway {
@@ -44,7 +53,8 @@ impl TodoGateway {
 
 #[cfg(test)]
 mod tests {
-	use driver::todo::TodosJson;
+	use domain::response::Response;
+use driver::todo::TodosJson;
 
 use super::*;
 
@@ -77,6 +87,17 @@ use super::*;
 			done: TodoDone(false),
 		};
 
+		assert_eq!(actual.unwrap(), expected)
+	}
+
+	#[tokio::test]
+	async fn test_create() {
+		let mut driver = mry::new!(TodoDriver {});
+		driver.mock_create("title".to_string()).returns_with(|_| Ok(Response { message: "ok".to_string() }));
+		let gateway = TodoGateway { driver };
+		let actual = gateway.create(TodoTitle("title".to_string())).await;
+		let expected = Response{ message: "ok".to_string()};
+		
 		assert_eq!(actual.unwrap(), expected)
 	}
 }

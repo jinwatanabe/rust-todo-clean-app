@@ -15,10 +15,17 @@ pub async fn get_by_id(
 	todo_port.get_by_id(id).await
 }
 
+pub async fn create(
+	todo_port: &impl TodoPort,
+	title: domain::todo::TodoTitle,
+) -> anyhow::Result<domain::response::Response> {
+	todo_port.create(title).await
+}
+
 #[cfg(test)]
 mod tests {
 
-	use domain::todo::{TodoId, TodoTitle, TodoDone};
+	use domain::{todo::{TodoId, TodoTitle, TodoDone}, response::Response};
 
 use crate::port::todo::MockTodoPort;
 
@@ -51,6 +58,15 @@ use super::*;
 			done: TodoDone(false),
 		};
 
+		assert_eq!(actual.unwrap(), expected)
+	}
+
+	#[tokio::test]
+	async fn create() {
+		let mut todo_port = MockTodoPort::default();
+		todo_port.mock_create(TodoTitle("title".to_string())).returns_with(|_| Ok(Response{ message: "ok".to_string() }));
+		let actual = todo_port.create(TodoTitle("title".to_string())).await;
+		let expected = Response{ message: "ok".to_string() };
 		assert_eq!(actual.unwrap(), expected)
 	}
 }

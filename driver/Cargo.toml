@@ -15,3 +15,5 @@ dotenv = "0.15.0"
 chrono = "0.4"
 diesel = { version = "1.4.8", features = ["mysql"] }
 
+domain = { path = "../domain" }
+

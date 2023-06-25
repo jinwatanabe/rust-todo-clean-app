@@ -226,6 +226,7 @@ dependencies = [
  "chrono",
  "derive_more",
  "diesel",
+ "domain",
  "dotenv",
  "mry",
  "serde",
