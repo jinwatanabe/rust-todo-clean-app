@@ -60,6 +60,15 @@ impl TodoPort for TodoGateway {
 
 		Ok(result)
 	}
+
+	async fn delete(&self, id: TodoId) -> anyhow::Result<Response> {
+		let json = self.driver.delete(id.0).await?;
+		let result = Response {
+			message: json.message,
+		};
+
+		Ok(result)
+	}
 }
 
 impl TodoGateway {
@@ -124,6 +133,17 @@ use super::*;
 		driver.mock_update(1, Some("title".to_string()), Some(false)).returns_with(|_, _, _| Ok(Response { message: "ok".to_string() }));
 		let gateway = TodoGateway { driver };
 		let actual = gateway.update(TodoId(1), Some(TodoTitle("title".to_string())), Some(TodoDone(false))).await;
+		let expected = Response{ message: "ok".to_string()};
+
+		assert_eq!(actual.unwrap(), expected)
+	}
+
+	#[tokio::test]
+	async fn test_delete() {
+		let mut driver = mry::new!(TodoDriver {});
+		driver.mock_delete(1).returns_with(|_| Ok(Response { message: "ok".to_string() }));
+		let gateway = TodoGateway { driver };
+		let actual = gateway.delete(TodoId(1)).await;
 		let expected = Response{ message: "ok".to_string()};
 
 		assert_eq!(actual.unwrap(), expected)

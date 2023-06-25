@@ -17,6 +17,7 @@ pub fn routes() -> Router {
         .route("/v1/todos/:id", get(get_by_id))
         .route("/v1/todos", post(create))
         .route("/v1/todos/:id", patch(update))
+        .route("/v1/todos/:id", axum::routing::delete(delete))
 }
 
 async fn get_all(
@@ -85,6 +86,21 @@ async fn update(
     };
     let result = usecase::todo::update(&container.todo_gateway, id, title, done).await;
     let response = result.unwrap();
+    Json(response)
+}
+
+async fn delete(
+    Extension(container): Extension<Arc<Container>>,
+    path: axum::extract::Path<i32>,
+) -> impl IntoResponse {
+    let id = TodoId(path.0); // `path.into_inner()` を使用してi32の値を取得
+    let result = usecase::todo::delete(&container.todo_gateway, id).await;
+
+    let response = match result {
+        Ok(_) => result.unwrap(),
+        Err(_) => domain::response::Response { message: "user id not found".to_string() },
+    };
+
     Json(response)
 }
 

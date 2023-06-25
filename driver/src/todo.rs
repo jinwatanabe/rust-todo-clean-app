@@ -65,6 +65,17 @@ impl TodoDriver {
         _ => Ok(Response { message: "Update Successful".to_string() }),
     }
 	}
+
+	pub async fn delete(&self, id_: i32) -> anyhow::Result<Response> {
+		use crate::schema::todos::dsl::*;
+		let connection = establish_connection();
+		let todo = todos.filter(id.eq(id_));
+		let result = diesel::delete(todo).execute(&connection)?;
+		match result {
+			0 => Err(anyhow::anyhow!("Nothing to delete")),
+			_ => Ok(Response { message: "Delete Successful".to_string() }),
+		}
+	}
 }
 
 #[derive(Deserialize, Debug)]

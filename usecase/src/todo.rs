@@ -31,6 +31,13 @@ pub async fn update(
 	todo_port.update(id, title, done).await
 }
 
+pub async fn delete(
+	todo_port: &impl TodoPort,
+	id: domain::todo::TodoId,
+) -> anyhow::Result<domain::response::Response> {
+	todo_port.delete(id).await
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -84,6 +91,15 @@ use super::*;
 		let mut todo_port = MockTodoPort::default();
 		todo_port.mock_update(TodoId(1), Some(TodoTitle("title".to_string())), Some(TodoDone(true))).returns_with(|_, _, _| Ok(Response{ message: "ok".to_string() }));
 		let actual = todo_port.update(TodoId(1), Some(TodoTitle("title".to_string())), Some(TodoDone(true))).await;
+		let expected = Response{ message: "ok".to_string() };
+		assert_eq!(actual.unwrap(), expected)
+	}
+
+	#[tokio::test]
+	async fn delete() {
+		let mut todo_port = MockTodoPort::default();
+		todo_port.mock_delete(TodoId(1)).returns_with(|_| Ok(Response{ message: "ok".to_string() }));
+		let actual = todo_port.delete(TodoId(1)).await;
 		let expected = Response{ message: "ok".to_string() };
 		assert_eq!(actual.unwrap(), expected)
 	}
