@@ -1,7 +1,8 @@
-use diesel::{Queryable, QueryDsl};
+use diesel::{QueryDsl};
 use domain::response::Response;
 use serde::Deserialize;
 use utils::establish_connection;
+use crate::schema::{Todo, NewTodo};
 use crate::{utils};
 use diesel::RunQueryDsl;
 use diesel::prelude::*;
@@ -25,19 +26,24 @@ impl TodoDriver {
 		Ok(result)
 	}
 
-pub async fn create(&self, title: String) -> anyhow::Result<Response> {
-		todo!()
+	pub async fn create(&self, title: String) -> anyhow::Result<Response> {
+		use crate::schema::todos::dsl::todos;
+		let connection = establish_connection();
+		let new_todos = vec![
+			NewTodo {
+				title: &title,
+				done: false,
+			}
+		];
+		diesel::insert_into(todos)
+			.values(&new_todos)
+			.execute(&connection)?;
+
+		Ok(Response { message: "ok".to_string() })
 	}
 }
 
 #[derive(Deserialize, Debug)]
 pub struct TodosJson {
 	pub todos: Vec<Todo>,
-}
-
-#[derive(Deserialize, Debug, Queryable)]
-pub struct Todo {
-	pub id: i32,
-	pub title: String,
-	pub done: bool,
 }

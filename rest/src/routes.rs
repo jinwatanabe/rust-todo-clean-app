@@ -1,10 +1,11 @@
 use axum::Extension;
-use axum::routing::get;
-use axum::{response::IntoResponse, Json, Router};
-use domain::todo::TodoId;
+use axum::routing::{get, post};
+use axum::{response::IntoResponse, Json, Router, extract};
+use domain::todo::{TodoId, TodoTitle};
 use serde::Serialize;
 use gateway::todo::TodoGateway;
 use std::{sync::Arc};
+use serde::{Deserialize};
 
 pub struct Container {
     pub todo_gateway: TodoGateway,
@@ -14,6 +15,7 @@ pub fn routes() -> Router {
     Router::new()
         .route("/v1/todos", get(get_all))
         .route("/v1/todos/:id", get(get_by_id))
+        .route("/v1/todos", post(create))
 }
 
 async fn get_all(
@@ -47,6 +49,20 @@ async fn get_by_id(
     Json(todo_json)
 }
 
+async fn create(
+    Extension(container): Extension<Arc<Container>>,
+    extract::Json(title): extract::Json<Title>,
+) -> impl IntoResponse {
+    if title.title.is_empty() {
+        return Json(domain::response::Response { message: "title is empty".to_string() });
+    }
+
+    let title = TodoTitle(title.title);
+    let result = usecase::todo::create(&container.todo_gateway, title).await;
+    let response = result.unwrap();
+    Json(response)
+}
+
 #[derive(Serialize)]
 pub struct TodoJson {
     pub id: i32,
@@ -57,4 +73,9 @@ pub struct TodoJson {
 #[derive(Serialize)]
 pub struct TodosJson {
     pub todos: Vec<TodoJson>,
+}
+
+#[derive(Deserialize)]
+struct Title {
+    title: String,
 }

@@ -73,7 +73,7 @@ use super::*;
 	#[tokio::test]
 	async fn test_get_by_id() {
 		let mut driver = mry::new!(TodoDriver {});
-		driver.mock_get_by_id(1).returns_with(|_| Ok(driver::todo::Todo {
+		driver.mock_get_by_id(1).returns_with(|_| Ok(driver::schema::Todo{
 			id: 1,
 			title: "title".to_string(),
 			done: false,
