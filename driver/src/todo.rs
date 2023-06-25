@@ -41,6 +41,30 @@ impl TodoDriver {
 
 		Ok(Response { message: "ok".to_string() })
 	}
+
+	pub async fn update(&self, _id: i32, _title: Option<String>, _done: Option<bool>) -> anyhow::Result<Response> {
+		use crate::schema::todos::dsl::*;
+		let connection = establish_connection();
+		let todo = todos.filter(id.eq(_id));
+    let mut updated = 0;
+    if let Some(_title) = _title {
+        diesel::update(todo)
+            .set(title.eq(_title))
+            .execute(&connection)?;
+        updated += 1;
+    }
+    if let Some(_done) = _done {
+        diesel::update(todo)
+            .set(done.eq(_done))
+            .execute(&connection)?;
+        updated += 1;
+    }
+
+    match updated {
+        0 => Err(anyhow::anyhow!("Nothing to update")),
+        _ => Ok(Response { message: "Update Successful".to_string() }),
+    }
+	}
 }
 
 #[derive(Deserialize, Debug)]

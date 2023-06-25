@@ -43,6 +43,23 @@ impl TodoPort for TodoGateway {
 
 		Ok(result)
 	}
+
+	async fn update(&self, id: TodoId, title: Option<TodoTitle>, done: Option<TodoDone>) -> anyhow::Result<Response> {
+		let title = match title {
+			Some(title) => Some(title.0),
+			None => None,
+		};
+		let done = match done {
+			Some(done) => Some(done.0),
+			None => None,
+		};
+		let json = self.driver.update(id.0, title, done).await?;
+		let result = Response {
+			message: json.message,
+		};
+
+		Ok(result)
+	}
 }
 
 impl TodoGateway {
@@ -98,6 +115,17 @@ use super::*;
 		let actual = gateway.create(TodoTitle("title".to_string())).await;
 		let expected = Response{ message: "ok".to_string()};
 		
+		assert_eq!(actual.unwrap(), expected)
+	}
+
+	#[tokio::test]
+	async fn test_update() {
+		let mut driver = mry::new!(TodoDriver {});
+		driver.mock_update(1, Some("title".to_string()), Some(false)).returns_with(|_, _, _| Ok(Response { message: "ok".to_string() }));
+		let gateway = TodoGateway { driver };
+		let actual = gateway.update(TodoId(1), Some(TodoTitle("title".to_string())), Some(TodoDone(false))).await;
+		let expected = Response{ message: "ok".to_string()};
+
 		assert_eq!(actual.unwrap(), expected)
 	}
 }

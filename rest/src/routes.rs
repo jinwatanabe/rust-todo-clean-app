@@ -1,5 +1,5 @@
 use axum::Extension;
-use axum::routing::{get, post};
+use axum::routing::{get, post, patch};
 use axum::{response::IntoResponse, Json, Router, extract};
 use domain::todo::{TodoId, TodoTitle};
 use serde::Serialize;
@@ -16,6 +16,7 @@ pub fn routes() -> Router {
         .route("/v1/todos", get(get_all))
         .route("/v1/todos/:id", get(get_by_id))
         .route("/v1/todos", post(create))
+        .route("/v1/todos/:id", patch(update))
 }
 
 async fn get_all(
@@ -63,6 +64,30 @@ async fn create(
     Json(response)
 }
 
+async fn update(
+    Extension(container): Extension<Arc<Container>>,
+    path: axum::extract::Path<i32>,
+    extract::Json(option): extract::Json<UpdateJson>,
+) -> impl IntoResponse {
+    
+    if option.title.is_none() && option.done.is_none() {
+        return Json(domain::response::Response{ message: "title and done are empty".to_string() });
+    }
+
+    let id = TodoId(path.0);
+    let title = match option.title {
+        Some(title) => Some(TodoTitle(title)),
+        None => None,
+    };
+    let done = match option.done {
+        Some(done) => Some(domain::todo::TodoDone(done)),
+        None => None,
+    };
+    let result = usecase::todo::update(&container.todo_gateway, id, title, done).await;
+    let response = result.unwrap();
+    Json(response)
+}
+
 #[derive(Serialize)]
 pub struct TodoJson {
     pub id: i32,
@@ -78,4 +103,10 @@ pub struct TodosJson {
 #[derive(Deserialize)]
 struct Title {
     title: String,
+}
+
+#[derive(Deserialize)]
+struct UpdateJson {
+    title: Option<String>,
+    done: Option<bool>,
 }
